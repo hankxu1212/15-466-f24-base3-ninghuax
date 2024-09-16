@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <optional>
 
 struct Scene {
 	struct Transform {
@@ -43,6 +44,18 @@ struct Scene {
 		glm::mat4x3 make_local_to_world() const;
 		glm::mat4x3 make_world_to_local() const;
 
+		glm::quat WorldRotation() const
+    	{
+			if (parent) {
+				return parent->WorldRotation() * rotation;
+			}
+			else {
+				return rotation;
+			}
+		}
+
+		glm::quat WorldInverseRotation() const { return glm::inverse(WorldRotation()); }
+
 		//since hierarchy is tracked through pointers, copy-constructing a transform  is not advised:
 		Transform(Transform const &) = delete;
 		//if we delete some constructors, we need to let the compiler know that the default constructor is still okay:
@@ -52,6 +65,12 @@ struct Scene {
 	struct Drawable {
 		//a 'Drawable' attaches attribute data to a transform:
 		Drawable(Transform *transform_) : transform(transform_) { assert(transform); }
+		~Drawable()
+		{
+			if (cleanUpTransform)
+				delete transform;
+		}
+
 		Transform * transform;
 
 		//Contains all the data needed to run the OpenGL pipeline:
@@ -79,6 +98,9 @@ struct Scene {
 				GLenum target = GL_TEXTURE_2D;
 			} textures[TextureCount];
 		} pipeline;
+
+		std::optional<int> fruitIndex;
+		bool cleanUpTransform = false;
 	};
 
 	struct Camera {

@@ -23,8 +23,8 @@ Load< MeshBuffer > myscene_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 	return ret;
 });
 
-Load< Sound::Sample > dusty_floor_sample(LoadTagDefault, []() -> Sound::Sample const * {
-	return new Sound::Sample(data_path("dusty-floor.opus"));
+Load< Sound::Sample > ambSFX(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("BackgroundNoise.wav"));
 });
 
 Load< Scene > myscene_scene(LoadTagDefault, []() -> Scene const * {
@@ -101,6 +101,8 @@ PlayMode::PlayMode() : scene(*myscene_scene) {
 	//get pointer to camera for convenience:
 	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
 	camera = &scene.cameras.front();
+
+	Sound::loop_3D(*ambSFX, 1.0f, lightTransform->position, 10.0f);
 }
 
 PlayMode::~PlayMode() {

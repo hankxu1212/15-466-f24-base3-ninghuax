@@ -17,4 +17,5 @@ struct Fruit
 
 	float timeOfInstantiation;
     std::shared_ptr< Sound::PlayingSample > sfx;
+	bool canTriggerWarning = true;
 };

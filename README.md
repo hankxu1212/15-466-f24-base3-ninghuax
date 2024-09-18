@@ -1,8 +1,8 @@
-# (TODO: your game's title)
+# Fruit Catcher 2
 
-Author: (TODO: your name)
+Author: Hank Xu
 
-Design: (TODO: In two sentences or fewer, describe what is new and interesting about your game.)
+Design: Catch fruits using space! However, this time, its dark! Use sound to find out when the fruits will be landing!
 
 Screen Shot:
 
@@ -10,6 +10,9 @@ Screen Shot:
 
 How To Play:
 
-(TODO: describe the controls and (if needed) goals/strategy.)
+Catch fruits using `space`!
+
+Note:
+_The execution was indeed a bit poor. :sadface_
 
 This game was built with [NEST](NEST.md).

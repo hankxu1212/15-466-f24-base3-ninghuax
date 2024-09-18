@@ -181,7 +181,9 @@ void PlayMode::HandleSpacePressed()
 		DestroyFruit(distances[0].second);
 
 		Sound::play_3D(*successSFX, 1.0f, glm::vec3(0, 0, -2), 10.0f);
+
 	}
+	fruits[distances[0].second].canTriggerWarning = false;
 }
 
 void PlayMode::UpdateSpawn()
@@ -207,11 +209,13 @@ void PlayMode::update(float elapsed)
 		fruit.Update(elapsed);
 		if (fruit.drawable->transform->position.z < -4)
 		{
-			std::cout << fruit.drawable->transform->position.z << " FOUND Z\n";
-			warnText = "Too Slow!";
-			warnTextColor = c_white;
+			if (fruit.canTriggerWarning){
+				std::cout << fruit.drawable->transform->position.z << " FOUND Z\n";
+				warnText = "Too Slow!";
+				warnTextColor = c_white;
 
-			Sound::play_3D(*failureSFX, 1.0f, glm::vec3(0, 0, -2), 10.0f);
+				Sound::play_3D(*failureSFX, 1.0f, glm::vec3(0, 0, -2), 10.0f);
+			}
 
 			DestroyFruit(fruit.drawable->fruitIndex.value());
 			displayPoints--;
@@ -242,9 +246,6 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	scene.draw(*camera);
 
-	glm::mat4x3 frame = camera->transform->make_local_to_parent();
-	glm::vec3 frame_right = frame[0];
-	glm::vec3 frame_at = frame[3];
 	Sound::listener.set_position_right(glm::vec3(0,0,-2), glm::vec3(0,0,1), 1.0f / 60.0f);
 
 	{ //use DrawLines to overlay some text:

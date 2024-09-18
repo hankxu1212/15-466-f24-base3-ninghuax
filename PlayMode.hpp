@@ -74,7 +74,7 @@ struct PlayMode : Mode {
 
 	int currentSpawnIndex = 0;
 
-	const SpawnTimeStamp spawnPattern[MAX_LEVELS] = 
+	SpawnTimeStamp spawnPattern[MAX_LEVELS] = 
 	{
 		{1,BANANA},
 		{2,BANANA},

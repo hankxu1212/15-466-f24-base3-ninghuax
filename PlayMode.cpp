@@ -24,7 +24,14 @@ Load< MeshBuffer > myscene_meshes(LoadTagDefault, []() -> MeshBuffer const * {
 });
 
 Load< Sound::Sample > ambSFX(LoadTagDefault, []() -> Sound::Sample const * {
-	return new Sound::Sample(data_path("BackgroundNoise.wav"));
+	return new Sound::Sample(data_path("Background.wav"));
+});
+
+Load< Sound::Sample > successSFX(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("TargetHit.wav"));
+});
+Load< Sound::Sample > failureSFX(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("TargetMiss.wav"));
 });
 
 Load< Scene > myscene_scene(LoadTagDefault, []() -> Scene const * {
@@ -103,6 +110,9 @@ PlayMode::PlayMode() : scene(*myscene_scene) {
 	camera = &scene.cameras.front();
 
 	Sound::loop_3D(*ambSFX, 1.0f, lightTransform->position, 10.0f);
+
+	for (int i=0;i<MAX_LEVELS;++i)
+		spawnPattern[i].timeStamp *= 2;
 }
 
 PlayMode::~PlayMode() {
@@ -158,6 +168,8 @@ void PlayMode::HandleSpacePressed()
 	{
 		warnText = "Too Early!";
 		warnTextColor = c_red;
+		
+		Sound::play_3D(*failureSFX, 1.0f, glm::vec3(0, 0, -2), 10.0f);
 	}
 	else
 	{
@@ -167,6 +179,8 @@ void PlayMode::HandleSpacePressed()
 		displayPoints++;
 		displayText = std::to_string(displayPoints);
 		DestroyFruit(distances[0].second);
+
+		Sound::play_3D(*successSFX, 1.0f, glm::vec3(0, 0, -2), 10.0f);
 	}
 }
 
@@ -177,7 +191,7 @@ void PlayMode::UpdateSpawn()
 	
 	if (time > spawnPattern[currentSpawnIndex].timeStamp)
 	{
-		InstantiateFruit(FRUITS[spawnPattern[currentSpawnIndex].fruitType], glm::vec3(0, 0, Noire::Math::Random(2, 2.5f)));
+		InstantiateFruit(FRUITS[spawnPattern[currentSpawnIndex].fruitType], glm::vec3(0, 0, 7));
 		currentSpawnIndex++;
 	}
 }
@@ -191,10 +205,13 @@ void PlayMode::update(float elapsed)
 	for(auto& fruit : fruits)
 	{
 		fruit.Update(elapsed);
-		if (fruit.drawable->transform->position.z < -2.059)
+		if (fruit.drawable->transform->position.z < -4)
 		{
+			std::cout << fruit.drawable->transform->position.z << " FOUND Z\n";
 			warnText = "Too Slow!";
 			warnTextColor = c_white;
+
+			Sound::play_3D(*failureSFX, 1.0f, glm::vec3(0, 0, -2), 10.0f);
 
 			DestroyFruit(fruit.drawable->fruitIndex.value());
 			displayPoints--;
@@ -209,9 +226,9 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//set up light type and position for lit_color_texture_program:
 	glUseProgram(lit_color_texture_program->program);
-	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 1);
+	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 2);
 	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(lightTransform->rotation));
-	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
+	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(2, 2,2)));
 	glUseProgram(0);
 
 	glClearColor(0, 0, 0, 1.0f);
@@ -224,6 +241,11 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	GL_ERRORS(); //print any errors produced by this setup code
 
 	scene.draw(*camera);
+
+	glm::mat4x3 frame = camera->transform->make_local_to_parent();
+	glm::vec3 frame_right = frame[0];
+	glm::vec3 frame_at = frame[3];
+	Sound::listener.set_position_right(glm::vec3(0,0,-2), glm::vec3(0,0,1), 1.0f / 60.0f);
 
 	{ //use DrawLines to overlay some text:
 		glDisable(GL_DEPTH_TEST);

@@ -13,6 +13,7 @@ struct Fruit
 
     float currentVelocity;
     glm::quat rotationDirection;
+	float velocityMultiplier = 1;
 
 	float timeOfInstantiation;
     std::shared_ptr< Sound::PlayingSample > sfx;
